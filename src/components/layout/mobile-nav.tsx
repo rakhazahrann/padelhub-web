@@ -131,6 +131,34 @@ export function MobileNav() {
               <div className="mb-3 rounded-xl bg-muted/60 p-3 border border-border/40">
                 <p className="text-sm font-semibold">{user.name}</p>
                 <p className="text-xs text-muted-foreground">{user.email}</p>
+                
+                {user.role === 'ADMIN' && (
+                  <Link
+                    href="/admin/dashboard"
+                    onClick={() => setMobileNavOpen(false)}
+                    className="mt-2 block text-xs font-semibold text-secondary hover:underline"
+                  >
+                    Dashboard Admin →
+                  </Link>
+                )}
+                {user.role === 'SUPER_ADMIN' && (
+                  <div className="mt-2 space-y-1.5 border-t border-border/40 pt-1.5">
+                    <Link
+                      href="/super-admin/dashboard"
+                      onClick={() => setMobileNavOpen(false)}
+                      className="block text-xs font-semibold text-secondary hover:underline"
+                    >
+                      Dashboard Super Admin →
+                    </Link>
+                    <Link
+                      href="/admin/dashboard"
+                      onClick={() => setMobileNavOpen(false)}
+                      className="block text-xs font-semibold text-secondary hover:underline"
+                    >
+                      Dashboard Admin →
+                    </Link>
+                  </div>
+                )}
               </div>
               <Button
                 variant="ghost"

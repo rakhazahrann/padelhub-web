@@ -35,7 +35,7 @@ import { cn, formatCurrency } from '@/lib/utils';
 import { PaymentMethodSelector, type WalkInPaymentMethod, formatPaymentMethod } from './payment-method-selector';
 
 const MOCK_SLUG = 'padelhub-arena';
-const DURATIONS = [60, 90, 120] as const;
+const DURATIONS = [60, 120] as const;
 
 type Step = 1 | 2 | 3;
 

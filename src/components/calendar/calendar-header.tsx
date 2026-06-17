@@ -57,7 +57,7 @@ export function CalendarHeader({
         <div className="flex items-center gap-2">
           <span className="text-xs font-medium text-muted-foreground">Durasi Sesi:</span>
           <div className="flex rounded-lg border border-border p-1 bg-muted/30">
-            {([60, 90, 120] as const).map((duration) => (
+            {([60, 120] as const).map((duration) => (
               <button
                 key={duration}
                 onClick={() => onDurationChange(duration)}

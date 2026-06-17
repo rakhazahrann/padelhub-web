@@ -23,7 +23,7 @@ export function CalendarView({
   const courts = schedule.courts || [];
   
   // Get all unique start times from the first court's slots to draw rows
-  const timeLabels = courts[0]?.slots.map((s) => s.startTime) || [];
+  const timeLabels = (courts[0]?.slots.map((s) => s.startTime) || []).filter((t) => t.endsWith(':00'));
 
   // Helper to check if a sequence of slots is available starting from a given slot index
   const isSequenceAvailable = (
@@ -107,6 +107,13 @@ export function CalendarView({
                       return <div key={courtData.court.id} className="h-24 border-r border-border last:border-r-0" />;
                     }
 
+                    const nextSlot = courtData.slots[slotIndex + 1];
+                    const totalPrice = slot.price + (nextSlot?.price || 0);
+                    const modifiedSlot = {
+                      ...slot,
+                      price: totalPrice,
+                    };
+
                     const isAvailable = slot.status === 'AVAILABLE';
                     const isValidStart = isAvailable && isSequenceAvailable(courtData.slots, slotIndex, selectedDuration);
                     const isSelected = isSlotSelected(courtData.court.id, slot.startTime, slotIndex, courtData.slots);
@@ -121,7 +128,7 @@ export function CalendarView({
                         className="p-2 h-24 border-r border-border last:border-r-0 flex items-center justify-center"
                       >
                         <SlotCell
-                          slot={slot}
+                          slot={modifiedSlot}
                           isSelected={isSelected}
                           disabled={isCellDisabled}
                           onClick={() => handleCellClick(courtData.court.id, slot.startTime, slotIndex, courtData.slots)}

@@ -164,9 +164,14 @@ export function Navbar() {
                         </DropdownMenuItem>
                       )}
                       {user.role === 'SUPER_ADMIN' && (
-                        <DropdownMenuItem className="cursor-pointer rounded-lg">
-                          <Link href="/super-admin/dashboard" className="w-full">Dashboard Super Admin</Link>
-                        </DropdownMenuItem>
+                        <>
+                          <DropdownMenuItem className="cursor-pointer rounded-lg">
+                            <Link href="/super-admin/dashboard" className="w-full">Dashboard Super Admin</Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="cursor-pointer rounded-lg">
+                            <Link href="/admin/dashboard" className="w-full">Dashboard Admin</Link>
+                          </DropdownMenuItem>
+                        </>
                       )}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={clearAuth} className="text-destructive cursor-pointer rounded-lg">

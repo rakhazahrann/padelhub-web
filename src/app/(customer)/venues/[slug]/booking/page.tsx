@@ -24,7 +24,7 @@ import { siteConfig } from '@/config/site';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 
-const DURATIONS = [60, 90, 120] as const;
+const DURATIONS = [60, 120] as const;
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -51,7 +51,8 @@ export default function BookingFlowPage({ params }: PageProps) {
   const schedule = scheduleResp?.data;
   const courts = venue?.courts || [];
 
-  const selectedCourt = courts.find((c) => c.id === selectedCourtId);
+  const activeCourtId = selectedCourtId || courts[0]?.id || null;
+  const selectedCourt = courts.find((c) => c.id === activeCourtId);
 
   const handleSlotSelect = (courtId: string, startTime: string, totalPrice: number) => {
     setSelectedCourtId(courtId);
@@ -71,10 +72,10 @@ export default function BookingFlowPage({ params }: PageProps) {
   };
 
   const handleCheckoutSubmit = (formValues: BookingFormValues) => {
-    if (!selectedCourtId || !selectedStartTime) return;
+    if (!activeCourtId || !selectedStartTime) return;
     createBookingMutation.mutate(
       {
-        courtId: selectedCourtId,
+        courtId: activeCourtId,
         bookingDate: selectedDate,
         startTime: selectedStartTime,
         duration: selectedDuration,
@@ -184,8 +185,8 @@ export default function BookingFlowPage({ params }: PageProps) {
                         key={court.id}
                         onClick={() => { setSelectedCourtId(court.id); setSelectedStartTime(null); setSelectedTotalPrice(0); setShowForm(false); }}
                         className={cn(
-                          'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border transition-paper whitespace-nowrap cursor-pointer',
-                          selectedCourtId === court.id
+                          'flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border transition-paper whitespace-nowrap cursor-pointer',
+                          activeCourtId === court.id
                             ? 'border-secondary bg-secondary/10 text-secondary'
                             : 'border-border/60 bg-card text-muted-foreground hover:border-border hover:text-foreground',
                         )}
@@ -199,7 +200,7 @@ export default function BookingFlowPage({ params }: PageProps) {
                 {schedule ? (
                   <TimeSlotGrid
                     daySchedule={schedule}
-                    selectedCourtId={selectedCourtId}
+                    selectedCourtId={activeCourtId}
                     selectedDuration={selectedDuration}
                     selectedStartTime={selectedStartTime}
                     onSelectSlot={handleSlotSelect}
@@ -243,7 +244,7 @@ export default function BookingFlowPage({ params }: PageProps) {
               </Card>
 
               {/* Form */}
-              {showForm && selectedCourtId && selectedStartTime ? (
+              {showForm && activeCourtId && selectedStartTime ? (
                 <m.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}

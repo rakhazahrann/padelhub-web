@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { format, addDays, startOfDay } from 'date-fns';
 import { id } from 'date-fns/locale';
 import {
@@ -12,7 +11,6 @@ import {
   ChevronRight,
   Clock,
   CreditCard,
-  MapPin,
   ShieldCheck,
 } from 'lucide-react';
 import * as m from 'motion/react-m';
@@ -33,7 +31,6 @@ interface PageProps {
 
 export default function VenueDetailPage({ params }: PageProps) {
   const { slug } = React.use(params);
-  const router = useRouter();
 
   const today = startOfDay(new Date());
   const [selectedDate, setSelectedDate] = React.useState(() => format(today, 'yyyy-MM-dd'));
@@ -46,11 +43,9 @@ export default function VenueDetailPage({ params }: PageProps) {
   const schedule = scheduleResp?.data;
   const courts = venue?.courts || [];
 
-  React.useEffect(() => {
-    if (courts.length > 0 && !activeCourt) setActiveCourt(courts[0].id);
-  }, [courts, activeCourt]);
+  const currentActiveCourt = activeCourt || courts[0]?.id || null;
 
-  const activeCourtSchedule = schedule?.courts.find((c) => c.court.id === activeCourt);
+  const activeCourtSchedule = schedule?.courts.find((c) => c.court.id === currentActiveCourt);
   const days = Array.from({ length: 14 }).map((_, i) => addDays(today, i));
 
   const handlePrevDay = () => {
@@ -174,7 +169,7 @@ export default function VenueDetailPage({ params }: PageProps) {
                   onClick={() => setActiveCourt(court.id)}
                   className={cn(
                     'px-3 py-1.5 rounded-lg text-xs font-medium border transition-paper whitespace-nowrap cursor-pointer',
-                    activeCourt === court.id
+                    currentActiveCourt === court.id
                       ? 'border-secondary bg-secondary/10 text-secondary'
                       : 'border-border/60 text-muted-foreground hover:text-foreground',
                   )}
@@ -191,14 +186,19 @@ export default function VenueDetailPage({ params }: PageProps) {
               <LoadingSkeleton variant="calendar" />
             ) : activeCourtSchedule ? (
               <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-1.5">
-                {activeCourtSchedule.slots.map((slot) => {
-                  const isAvail = slot.status === 'AVAILABLE';
+                {activeCourtSchedule.slots.map((slot, idx) => {
+                  if (!slot.startTime.endsWith(':00')) return null;
+
+                  const nextSlot = activeCourtSchedule.slots[idx + 1];
+                  const isAvail = slot.status === 'AVAILABLE' && (!nextSlot || nextSlot.status === 'AVAILABLE');
+                  const totalPrice = slot.price + (nextSlot?.price || 0);
+
                   return (
                     <Link
                       key={slot.startTime}
                       href={`/venues/${venue.slug}/booking`}
                       className={cn(
-                        'flex flex-col items-center justify-center rounded-lg py-2 px-1 border text-center transition-paper',
+                        'flex flex-col items-center justify-center rounded-lg py-2 px-1 border text-center transition-paper h-12',
                         isAvail
                           ? 'border-success/30 bg-success/5 text-success hover:bg-success/10'
                           : 'border-border/40 bg-muted/20 text-muted-foreground/40 cursor-default',
@@ -211,7 +211,7 @@ export default function VenueDetailPage({ params }: PageProps) {
                         {slot.startTime}
                       </span>
                       <span className={cn('text-[8px] mt-0.5', isAvail ? 'text-success/70' : 'text-muted-foreground/30')}>
-                        {isAvail ? formatCurrency(slot.price) : 'Terisi'}
+                        {isAvail ? formatCurrency(totalPrice) : 'Terisi'}
                       </span>
                     </Link>
                   );

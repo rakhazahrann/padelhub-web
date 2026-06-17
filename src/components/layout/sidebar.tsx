@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LogOut } from 'lucide-react';
+import { LogOut, Shield, LayoutDashboard } from 'lucide-react';
 
 import type { LucideIcon } from 'lucide-react';
 
@@ -76,6 +76,35 @@ export function Sidebar({ items, title }: SidebarProps) {
             </Link>
           );
         })}
+
+        {user?.role === 'SUPER_ADMIN' && (
+          <>
+            <div className="my-2 border-t border-sidebar-border" />
+            {pathname.startsWith('/admin') ? (
+              <Link
+                href="/super-admin/dashboard"
+                className={cn(
+                  'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-paper text-secondary hover:bg-sidebar-accent/50',
+                  !isSidebarOpen && 'justify-center px-0',
+                )}
+              >
+                <Shield className="h-4 w-4 shrink-0" />
+                {isSidebarOpen && <span>Panel Super Admin</span>}
+              </Link>
+            ) : (
+              <Link
+                href="/admin/dashboard"
+                className={cn(
+                  'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-paper text-secondary hover:bg-sidebar-accent/50',
+                  !isSidebarOpen && 'justify-center px-0',
+                )}
+              >
+                <LayoutDashboard className="h-4 w-4 shrink-0" />
+                {isSidebarOpen && <span>Panel Admin</span>}
+              </Link>
+            )}
+          </>
+        )}
       </nav>
 
       <Separator />
