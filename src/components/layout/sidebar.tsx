@@ -7,7 +7,7 @@ import { LogOut, Shield, LayoutDashboard } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
-import { useAuthStore } from '@/stores/use-auth-store';
+import { useAuth } from '@/hooks/use-auth';
 import { useUiStore } from '@/stores/use-ui-store';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -25,7 +25,7 @@ interface SidebarProps {
 
 export function Sidebar({ items, title }: SidebarProps) {
   const pathname = usePathname();
-  const { user, clearAuth } = useAuthStore();
+  const { user, logout } = useAuth();
   const { isSidebarOpen } = useUiStore();
 
   const initials = user?.name
@@ -125,7 +125,7 @@ export function Sidebar({ items, title }: SidebarProps) {
         <Button
           variant="ghost"
           size="sm"
-          onClick={clearAuth}
+          onClick={logout}
           className={cn(
             'mt-1 w-full gap-2 text-sidebar-foreground/70 hover:text-destructive',
             !isSidebarOpen && 'px-0 justify-center',

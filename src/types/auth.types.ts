@@ -24,6 +24,5 @@ export type RegisterPayload = {
 
 export type AuthResponse = {
   user: User;
-  accessToken: string;
-  refreshToken: string;
+  session?: Record<string, unknown>;
 };

@@ -7,7 +7,7 @@ import * as m from 'motion/react-m';
 import { useMotionValueEvent, useScroll } from 'motion/react';
 
 import { cn } from '@/lib/utils';
-import { useAuthStore } from '@/stores/use-auth-store';
+import { useAuth } from '@/hooks/use-auth';
 import { useUiStore } from '@/stores/use-ui-store';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -22,7 +22,7 @@ import { useState } from 'react';
 
 export function Navbar() {
   const pathname = usePathname();
-  const { user, isAuthenticated, clearAuth } = useAuthStore();
+  const { user, isAuthenticated, logout } = useAuth();
   const { toggleMobileNav } = useUiStore();
   const [hidden, setHidden] = useState(false);
   const { scrollY } = useScroll();
@@ -174,7 +174,7 @@ export function Navbar() {
                         </>
                       )}
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={clearAuth} className="text-destructive cursor-pointer rounded-lg">
+                      <DropdownMenuItem onClick={logout} className="text-destructive cursor-pointer rounded-lg">
                         Keluar
                       </DropdownMenuItem>
                     </m.div>

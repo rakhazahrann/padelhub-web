@@ -22,7 +22,6 @@ function parseAuthCookie(request: NextRequest): CookiePayload | null {
 
 const PROTECTED_ROUTES = [
   { pattern: /^\/bookings(?:\/.*)?$/, roles: ['CUSTOMER', 'ADMIN', 'SUPER_ADMIN'] },
-  { pattern: /^\/venues\/[^/]+\/booking(?:\/.*)?$/, roles: ['CUSTOMER', 'ADMIN', 'SUPER_ADMIN'] },
   { pattern: /^\/admin(?:\/.*)?$/, roles: ['ADMIN', 'SUPER_ADMIN'] },
   { pattern: /^\/super-admin(?:\/.*)?$/, roles: ['SUPER_ADMIN'] },
 ];

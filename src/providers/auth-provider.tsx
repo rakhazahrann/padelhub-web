@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 
 import { useAuthStore } from '@/stores/use-auth-store';
+import { useAuth } from '@/hooks/use-auth';
 
 const PUBLIC_PATHS = ['/', '/login', '/register', '/venues'];
 
@@ -12,11 +13,18 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated, user, _hydrated } = useAuthStore();
+  const { checkSession, isCheckingSession } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
 
   useEffect(() => {
+    checkSession();
+  }, [checkSession]);
+
+  useEffect(() => {
+    if (isCheckingSession || !_hydrated) return;
+
     const isPublicPath = PUBLIC_PATHS.some(
       (path) => pathname === path || pathname.startsWith('/venues/'),
     );
@@ -36,7 +44,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return;
       }
     }
-  }, [isAuthenticated, user, pathname, router]);
+  }, [isAuthenticated, user, pathname, router, isCheckingSession, _hydrated]);
 
   return <>{children}</>;
 }

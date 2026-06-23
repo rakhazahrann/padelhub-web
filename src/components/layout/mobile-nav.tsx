@@ -6,7 +6,7 @@ import { X, CalendarDays, ClipboardList, MessageCircle, Home, Info, Percent, Sta
 
 import { cn } from '@/lib/utils';
 import { landingNav } from '@/config/navigation';
-import { useAuthStore } from '@/stores/use-auth-store';
+import { useAuth } from '@/hooks/use-auth';
 import { useUiStore } from '@/stores/use-ui-store';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -14,7 +14,7 @@ import { Separator } from '@/components/ui/separator';
 
 export function MobileNav() {
   const pathname = usePathname();
-  const { user, isAuthenticated, clearAuth } = useAuthStore();
+  const { user, isAuthenticated, logout } = useAuth();
   const { isMobileNavOpen, setMobileNavOpen } = useUiStore();
 
   if (
@@ -164,7 +164,7 @@ export function MobileNav() {
                 variant="ghost"
                 size="sm"
                 onClick={() => {
-                  clearAuth();
+                  logout();
                   setMobileNavOpen(false);
                 }}
                 className="w-full justify-start text-destructive rounded-xl"

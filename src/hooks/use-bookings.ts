@@ -37,8 +37,10 @@ export function useCreateBooking() {
     mutationFn: (payload: CreateBookingPayload) => bookingService.createBooking(payload),
     onSuccess: (response) => {
       if (response.success) {
+        toast.success('Booking berhasil dibuat!');
         queryClient.invalidateQueries({ queryKey: queryKeys.availability.all });
         queryClient.invalidateQueries({ queryKey: queryKeys.bookings.all });
+        queryClient.invalidateQueries({ queryKey: queryKeys.bookings.my() });
       }
     },
     onError: (error: Error) => {

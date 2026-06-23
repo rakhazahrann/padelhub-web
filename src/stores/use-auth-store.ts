@@ -2,74 +2,60 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 import type { User, UserRole } from '@/types/auth.types';
-
-const AUTH_COOKIE_NAME = 'padelhub-auth';
-
-function setAuthCookie(user: User) {
-  if (typeof document === 'undefined') return;
-  const payload = JSON.stringify({
-    isAuthenticated: true,
-    role: user.role,
-    email: user.email,
-    name: user.name,
-  });
-  document.cookie = `${AUTH_COOKIE_NAME}=${encodeURIComponent(payload)}; path=/; max-age=86400; SameSite=Lax`;
-}
-
-function clearAuthCookie() {
-  if (typeof document === 'undefined') return;
-  document.cookie = `${AUTH_COOKIE_NAME}=; path=/; max-age=0; SameSite=Lax`;
-}
+import { setAuthCookie, clearAuthCookie } from '@/lib/cookie';
 
 type AuthState = {
   user: User | null;
-  accessToken: string | null;
-  refreshToken: string | null;
   isAuthenticated: boolean;
+  _hydrated: boolean;
 };
 
 type AuthActions = {
-  setAuth: (user: User, accessToken: string, refreshToken: string) => void;
+  setUser: (user: User) => void;
   clearAuth: () => void;
   hasRole: (role: UserRole) => boolean;
+  setHydrated: () => void;
 };
 
 export const useAuthStore = create<AuthState & AuthActions>()(
   persist(
     (set, get) => ({
       user: null,
-      accessToken: null,
-      refreshToken: null,
       isAuthenticated: false,
+      _hydrated: false,
 
-      setAuth: (user, accessToken, refreshToken) => {
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('accessToken', accessToken);
-          localStorage.setItem('refreshToken', refreshToken);
-        }
-        setAuthCookie(user);
-        set({ user, accessToken, refreshToken, isAuthenticated: true });
+      setUser: (user) => {
+        set({ user, isAuthenticated: true });
+        setAuthCookie({ isAuthenticated: true, role: user.role, email: user.email, name: user.name });
       },
 
       clearAuth: () => {
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
-        }
+        set({ user: null, isAuthenticated: false });
         clearAuthCookie();
-        set({ user: null, accessToken: null, refreshToken: null, isAuthenticated: false });
+        // Explicitly remove from localStorage to prevent rehydrate issues
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('padelhub-auth');
+        }
       },
 
       hasRole: (role) => get().user?.role === role,
+
+      setHydrated: () => {
+        set({ _hydrated: true });
+      },
     }),
     {
       name: 'padelhub-auth',
       partialize: (state) => ({
         user: state.user,
-        accessToken: state.accessToken,
-        refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated,
       }),
+      onRehydrateStorage: () => (state) => {
+        if (state?.isAuthenticated && state.user) {
+          setAuthCookie({ isAuthenticated: true, role: state.user.role, email: state.user.email, name: state.user.name });
+        }
+        useAuthStore.getState().setHydrated();
+      },
     },
   ),
 );
