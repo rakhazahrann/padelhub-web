@@ -132,6 +132,14 @@ export function MobileNav() {
                 <p className="text-sm font-semibold">{user.name}</p>
                 <p className="text-xs text-muted-foreground">{user.email}</p>
                 
+                <Link
+                  href="/profile"
+                  onClick={() => setMobileNavOpen(false)}
+                  className="mt-2 block text-xs font-semibold text-secondary hover:underline"
+                >
+                  Profil →
+                </Link>
+                
                 {user.role === 'ADMIN' && (
                   <Link
                     href="/admin/dashboard"

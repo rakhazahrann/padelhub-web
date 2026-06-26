@@ -158,6 +158,9 @@ export function Navbar() {
                       <DropdownMenuItem className="cursor-pointer rounded-lg">
                         <Link href="/bookings" className="w-full">Pemesanan Saya</Link>
                       </DropdownMenuItem>
+                      <DropdownMenuItem className="cursor-pointer rounded-lg">
+                        <Link href="/profile" className="w-full">Profil</Link>
+                      </DropdownMenuItem>
                       {user.role === 'ADMIN' && (
                         <DropdownMenuItem className="cursor-pointer rounded-lg">
                           <Link href="/admin/dashboard" className="w-full">Dashboard Admin</Link>

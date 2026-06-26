@@ -314,7 +314,7 @@ export function WalkInWizard({ onComplete }: WalkInWizardProps) {
           {/* Form Column */}
           <div className="lg:col-span-3 space-y-4">
             <Card className="border border-border/60 shadow-sm rounded-2xl overflow-hidden">
-              <div className="bg-gradient-to-br from-secondary/[0.04] to-primary/[0.02] px-5 py-4 border-b border-border/40">
+              <div className="bg-gradient-to-br from-secondary/4 to-primary/2 px-5 py-4 border-b border-border/40">
                 <h3 className="font-bold text-sm">Data Pemesan</h3>
               </div>
               <CardContent className="p-5 space-y-4">
@@ -350,7 +350,7 @@ export function WalkInWizard({ onComplete }: WalkInWizardProps) {
             </Card>
 
             <Card className="border border-border/60 shadow-sm rounded-2xl overflow-hidden">
-              <div className="bg-gradient-to-br from-secondary/[0.04] to-primary/[0.02] px-5 py-4 border-b border-border/40">
+              <div className="bg-gradient-to-br from-secondary/4 to-primary/2 px-5 py-4 border-b border-border/40">
                 <h3 className="font-bold text-sm flex items-center gap-2">
                   <CreditCard className="h-4 w-4 text-secondary" />
                   Metode Pembayaran
@@ -370,7 +370,7 @@ export function WalkInWizard({ onComplete }: WalkInWizardProps) {
           <div className="lg:col-span-2">
             <div className="sticky top-24 space-y-4">
               <Card className="border border-border/60 shadow-sm rounded-2xl overflow-hidden">
-                <div className="bg-gradient-to-br from-secondary/[0.04] to-primary/[0.02] px-5 py-4 border-b border-border/40">
+                <div className="bg-gradient-to-br from-secondary/4 to-primary/2 px-5 py-4 border-b border-border/40">
                   <h3 className="font-bold text-sm">Ringkasan</h3>
                 </div>
                 <CardContent className="p-5 space-y-3">

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { format, addDays, startOfDay } from 'date-fns';
 import { id } from 'date-fns/locale';
-import { ArrowLeft, CalendarDays, Clock, Info, MapPin } from 'lucide-react';
+import { AlertCircle, ArrowLeft, CalendarDays, CheckCircle2, Clock, Info, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 import * as m from 'motion/react-m';
 
@@ -277,7 +277,7 @@ export default function BookingFlowPage({ params }: PageProps) {
             <div className="sticky top-24 space-y-4">
               {/* Summary card */}
               <Card className="border border-border/60 shadow-sm rounded-2xl overflow-hidden">
-                <div className="bg-gradient-to-br from-secondary/[0.04] to-primary/[0.02] px-5 py-4 border-b border-border/40">
+                <div className="bg-gradient-to-br from-secondary/4 to-primary/2 px-5 py-4 border-b border-border/40">
                   <h3 className="font-bold text-sm">Ringkasan</h3>
                 </div>
                 <CardContent className="p-5 space-y-3">
@@ -307,19 +307,65 @@ export default function BookingFlowPage({ params }: PageProps) {
                   className="space-y-4"
                 >
                   <Card className="border border-border/60 shadow-sm rounded-2xl overflow-hidden">
-                    <div className="bg-gradient-to-br from-secondary/[0.04] to-primary/[0.02] px-5 py-4 border-b border-border/40">
+                    <div className="bg-gradient-to-br from-secondary/4 to-primary/2 px-5 py-4 border-b border-border/40">
                       <h3 className="font-bold text-sm">Data Pemesan</h3>
                     </div>
-                    <CardContent className="p-5">
+                    <CardContent className="p-5 relative">
                       {!isAuthenticated && (
-                        <div className="rounded-xl bg-accent/40 p-3 flex gap-2 text-xs text-secondary-foreground border border-accent mb-4">
-                          <Info className="h-4 w-4 shrink-0 mt-0.5 text-secondary" />
+                        <>
+                          {/* Overlay untuk blur background */}
+                          <div className="absolute inset-0 z-10 bg-white/50 backdrop-blur-sm rounded-xl flex items-center justify-center" />
+                          
+                          {/* Alert card yang overlap - clickable */}
+                          <div className="absolute inset-0 z-20 flex items-center justify-center px-4">
+                            <div className="w-full max-w-xs rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 p-4 shadow-lg ring-1 ring-blue-900/10 pointer-events-auto text-center">
+                              <div className="flex flex-col gap-2">
+                                <div className="rounded-full bg-white/20 p-1.5 inline-flex self-center">
+                                  <AlertCircle className="h-4 w-4 text-white" />
+                                </div>
+                                <div className="space-y-0.5">
+                                  <p className="text-xs font-semibold text-white">Perlu Login</p>
+                                  <p className="text-[10px] text-white/80 leading-tight">
+                                    Login untuk lanjut booking & simpan riwayat
+                                  </p>
+                                </div>
+                                <Link
+                                  href={`/login?redirect=/venues/${slug}/booking`}
+                                  className="shrink-0 pointer-events-auto mt-1"
+                                >
+                                  <Button 
+                                    size="sm" 
+                                    className="bg-white hover:bg-gray-100 text-blue-700 font-semibold shadow-md text-xs py-1.5 px-4 h-auto"
+                                  >
+                                    Login Sekarang
+                                  </Button>
+                                </Link>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="rounded-xl bg-accent/40 p-3 flex gap-2 text-xs text-secondary-foreground border border-accent mt-4 pointer-events-none select-none">
+                            <Info className="h-4 w-4 shrink-0 mt-0.5 text-secondary" />
+                            <span>
+                              Atau, Anda bisa{' '}
+                              <Link href={`/login?redirect=/venues/${slug}/booking`} className="underline font-bold">
+                                login
+                              </Link>{' '}
+                              untuk simpan riwayat booking.
+                            </span>
+                          </div>
+                        </>
+                      )}
+
+                      {isAuthenticated && (
+                        <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-3 flex gap-2 text-xs text-emerald-800 mb-4">
+                          <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5 text-emerald-600" />
                           <span>
-                            Booking sebagai tamu.{' '}
+                            Data telah otomatis terisi dari profil Anda.{' '}
                             <Link href={`/login?redirect=/venues/${slug}/booking`} className="underline font-bold">
-                              Masuk
+                              Edit profil
                             </Link>{' '}
-                            untuk simpan riwayat.
+                            jika diperlukan.
                           </span>
                         </div>
                       )}
