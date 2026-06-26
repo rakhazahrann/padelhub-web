@@ -125,7 +125,7 @@ export function Sidebar({ items, title }: SidebarProps) {
         <Button
           variant="ghost"
           size="sm"
-          onClick={logout}
+          onClick={() => logout()}
           className={cn(
             'mt-1 w-full gap-2 text-sidebar-foreground/70 hover:text-destructive',
             !isSidebarOpen && 'px-0 justify-center',

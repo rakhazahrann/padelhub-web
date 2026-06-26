@@ -40,7 +40,6 @@ export default function BookingFlowPage({ params }: PageProps) {
   const [selectedDuration, setSelectedDuration] = React.useState<60 | 90 | 120>(60);
   const [selectedCourtId, setSelectedCourtId] = React.useState<string | null>(null);
   const [selectedStartTime, setSelectedStartTime] = React.useState<string | null>(null);
-  const [selectedTotalPrice, setSelectedTotalPrice] = React.useState(0);
   const [showForm, setShowForm] = React.useState(false);
 
   const { data: venueResp, isLoading: isVenueLoading } = useVenueBySlug(slug);
@@ -54,10 +53,60 @@ export default function BookingFlowPage({ params }: PageProps) {
   const activeCourtId = selectedCourtId || courts[0]?.id || null;
   const selectedCourt = courts.find((c) => c.id === activeCourtId);
 
-  const handleSlotSelect = (courtId: string, startTime: string, totalPrice: number) => {
+  // Load state from URL parameters on mount
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const dateParam = params.get('date');
+    const courtParam = params.get('courtId');
+    const timeParam = params.get('time');
+    const durationParam = params.get('duration');
+
+    /* eslint-disable react-hooks/set-state-in-effect */
+    if (dateParam) {
+      setSelectedDate(dateParam);
+    }
+    if (courtParam) {
+      setSelectedCourtId(courtParam);
+    }
+    if (timeParam) {
+      setSelectedStartTime(timeParam);
+    }
+    if (durationParam) {
+      const dur = parseInt(durationParam, 10);
+      if (dur === 60 || dur === 90 || dur === 120) {
+        setSelectedDuration(dur as 60 | 90 | 120);
+      }
+    }
+    if (courtParam && timeParam) {
+      setShowForm(true);
+    }
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, []);
+
+  // Recalculate total price when schedule loads or selection changes
+  const selectedTotalPrice = React.useMemo(() => {
+    if (!schedule || !selectedCourtId || !selectedStartTime) return 0;
+    const courtEntry = schedule.courts.find((c) => c.court.id === selectedCourtId);
+    if (!courtEntry) return 0;
+
+    const slots = courtEntry.slots;
+    const selectedIdx = slots.findIndex((s) => s.startTime === selectedStartTime);
+    if (selectedIdx === -1) return 0;
+
+    const slotsNeeded = selectedDuration / 30;
+    let total = 0;
+    for (let i = 0; i < slotsNeeded; i++) {
+      const slot = slots[selectedIdx + i];
+      if (slot) {
+        total += slot.price;
+      }
+    }
+    return total;
+  }, [schedule, selectedCourtId, selectedStartTime, selectedDuration]);
+
+  const handleSlotSelect = (courtId: string, startTime: string) => {
     setSelectedCourtId(courtId);
     setSelectedStartTime(startTime);
-    setSelectedTotalPrice(totalPrice);
     setShowForm(true);
   };
 
@@ -66,13 +115,20 @@ export default function BookingFlowPage({ params }: PageProps) {
       setSelectedDate(format(date, 'yyyy-MM-dd'));
       setSelectedCourtId(null);
       setSelectedStartTime(null);
-      setSelectedTotalPrice(0);
       setShowForm(false);
     }
   };
 
   const handleCheckoutSubmit = (formValues: BookingFormValues) => {
     if (!activeCourtId || !selectedStartTime) return;
+
+    if (!isAuthenticated) {
+      toast.error('Silakan login terlebih dahulu untuk melanjutkan pembayaran.');
+      const redirectUrl = `/venues/${slug}/booking?date=${selectedDate}&courtId=${activeCourtId}&time=${selectedStartTime}&duration=${selectedDuration}`;
+      router.push(`/login?redirect=${encodeURIComponent(redirectUrl)}`);
+      return;
+    }
+
     createBookingMutation.mutate(
       {
         courtId: activeCourtId,
@@ -156,7 +212,7 @@ export default function BookingFlowPage({ params }: PageProps) {
             {DURATIONS.map((d) => (
               <button
                 key={d}
-                onClick={() => { setSelectedDuration(d); setSelectedCourtId(null); setSelectedStartTime(null); setSelectedTotalPrice(0); setShowForm(false); }}
+                onClick={() => { setSelectedDuration(d); setSelectedCourtId(null); setSelectedStartTime(null); setShowForm(false); }}
                 className={cn(
                   'px-4 py-1.5 rounded-xl text-sm font-medium transition-paper cursor-pointer',
                   selectedDuration === d
@@ -183,7 +239,7 @@ export default function BookingFlowPage({ params }: PageProps) {
                     {courts.map((court) => (
                       <button
                         key={court.id}
-                        onClick={() => { setSelectedCourtId(court.id); setSelectedStartTime(null); setSelectedTotalPrice(0); setShowForm(false); }}
+                        onClick={() => { setSelectedCourtId(court.id); setSelectedStartTime(null); setShowForm(false); }}
                         className={cn(
                           'flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border transition-paper whitespace-nowrap cursor-pointer',
                           activeCourtId === court.id

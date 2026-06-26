@@ -174,7 +174,7 @@ export function Navbar() {
                         </>
                       )}
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={logout} className="text-destructive cursor-pointer rounded-lg">
+                      <DropdownMenuItem onClick={() => logout()} className="text-destructive cursor-pointer rounded-lg">
                         Keluar
                       </DropdownMenuItem>
                     </m.div>

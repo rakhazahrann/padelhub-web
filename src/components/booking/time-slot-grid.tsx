@@ -111,6 +111,7 @@ export function TimeSlotGrid({
 
           const isAvail = isSequenceAvailable(slots, idx, selectedDuration);
           const totalPrice = isAvail ? calculateBlockPrice(slots, idx, selectedDuration) : 0;
+          const blockPrice = calculateBlockPrice(slots, idx, selectedDuration);
           const isSelected = isSlotSelected(idx);
           const peak = isPeakHour(slot.startTime);
 
@@ -166,7 +167,7 @@ export function TimeSlotGrid({
                     : 'text-muted-foreground/30',
                 )}
               >
-                {isAvail || isSelected ? formatCurrency(slot.price) : 'Terisi'}
+                {isAvail || isSelected ? formatCurrency(blockPrice) : 'Terisi'}
               </span>
             </button>
           );
