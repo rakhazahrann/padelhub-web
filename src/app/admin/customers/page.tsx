@@ -1,6 +1,9 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+
+import { apiClient } from '@/services/api-client';
 import {
   Users,
   Search,
@@ -24,8 +27,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { formatCurrency, formatShortDate } from '@/lib/utils';
 
-import type { Booking } from '@/types/booking.types';
-
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                     */
 /* -------------------------------------------------------------------------- */
@@ -44,19 +45,6 @@ interface CustomerProfile {
 /*  Helpers                                                                   */
 /* -------------------------------------------------------------------------- */
 
-function getStoredBookings(): Booking[] {
-  if (typeof window === 'undefined') return [];
-  const stored = localStorage.getItem('padelhub_bookings');
-  if (stored) {
-    try {
-      return JSON.parse(stored);
-    } catch {
-      return [];
-    }
-  }
-  return [];
-}
-
 function getInitials(name: string): string {
   return name
     .split(' ')
@@ -67,57 +55,29 @@ function getInitials(name: string): string {
     .toUpperCase();
 }
 
-function buildCustomerProfiles(bookings: Booking[]): CustomerProfile[] {
-  const map = new Map<string, CustomerProfile>();
-
-  bookings.forEach((booking) => {
-    const key = booking.customerEmail || booking.customerPhone || booking.customerName;
-
-    if (!map.has(key)) {
-      map.set(key, {
-        key,
-        name: booking.customerName,
-        email: booking.customerEmail || '-',
-        phone: booking.customerPhone || '-',
-        totalBookings: 0,
-        totalSpent: 0,
-        lastBookingDate: booking.bookingDate,
-      });
-    }
-
-    const profile = map.get(key)!;
-    profile.totalBookings += 1;
-    profile.totalSpent += booking.totalAmount + booking.adminFee;
-
-    if (new Date(booking.bookingDate) > new Date(profile.lastBookingDate)) {
-      profile.lastBookingDate = booking.bookingDate;
-    }
-  });
-
-  return Array.from(map.values()).sort(
-    (a, b) => new Date(b.lastBookingDate).getTime() - new Date(a.lastBookingDate).getTime(),
-  );
-}
-
 /* -------------------------------------------------------------------------- */
 /*  Component                                                                 */
 /* -------------------------------------------------------------------------- */
 
 export default function CustomersPage() {
-  const [customers, setCustomers] = useState<CustomerProfile[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: response, isLoading } = useQuery({
+    queryKey: ['customers'],
+    queryFn: async () => {
+      const { data } = await apiClient.get<{ data: Array<{ customerName: string; customerEmail?: string | null; customerPhone: string; createdAt: string }> }>('/customers');
+      return data.data;
+    },
+  });
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      const bookings = getStoredBookings();
-      const profiles = buildCustomerProfiles(bookings);
-      setCustomers(profiles);
-      setIsLoading(false);
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, []);
+  const customers: CustomerProfile[] = (response ?? []).map((customer) => ({
+    key: customer.customerEmail || customer.customerPhone || customer.customerName,
+    name: customer.customerName,
+    email: customer.customerEmail || '-',
+    phone: customer.customerPhone || '-',
+    totalBookings: 0,
+    totalSpent: 0,
+    lastBookingDate: customer.createdAt,
+  }));
 
   const filteredCustomers = useMemo(() => {
     if (!searchQuery.trim()) return customers;

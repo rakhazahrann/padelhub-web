@@ -53,7 +53,7 @@ export default function AdminCalendarPage() {
   const schedule = availabilityResponse?.data;
 
   const { data: bookingsResponse, isLoading: bookingsLoading } = useBookings({
-    date: todayStr,
+    date: selectedDate,
   });
   const todayBookings = bookingsResponse?.data ?? [];
 

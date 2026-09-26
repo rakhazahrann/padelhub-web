@@ -24,7 +24,7 @@ import { siteConfig } from '@/config/site';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 
-const DURATIONS = [60, 120] as const;
+const DURATIONS = [60, 90, 120] as const;
 
 interface PageProps {
   params: Promise<{ slug: string }>;
