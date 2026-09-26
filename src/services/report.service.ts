@@ -31,13 +31,12 @@ export const reportService = {
   },
 
   async exportCsv(params?: Record<string, unknown>): Promise<Blob> {
-    void params;
-    const { data } = await apiClient.get('/reports/summary');
+    const { data } = await apiClient.get<ApiResponse<ReportSummary>>('/reports/summary', { params });
     const report = data.data;
     const headers = 'Date,Revenue,BookingCount,OccupancyRate\n';
-    const rows = (report.revenueByDay ?? []).map(
-      (item: { date: string; revenue: number; bookingCount: number }) =>
-        `"${item.date}",${item.revenue},${item.bookingCount},""`,
+    const occupancy = new Map(report.occupancyByDay.map((item) => [item.date, item.occupancyRate]));
+    const rows = report.revenueByDay.map(
+      (item) => `"${item.date}",${item.revenue},${item.bookingCount},${occupancy.get(item.date) ?? 0}`,
     ).join('\n');
     return new Blob([headers + rows], { type: 'text/csv' });
   },

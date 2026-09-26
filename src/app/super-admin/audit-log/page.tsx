@@ -1,6 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+
+import { apiClient } from '@/services/api-client';
 import * as m from 'motion/react-m';
 import {
   ScrollText,
@@ -37,116 +40,6 @@ interface AuditLogEntry {
 /*  Constants                                                                 */
 /* -------------------------------------------------------------------------- */
 
-const MOCK_AUDIT_LOGS: AuditLogEntry[] = [
-  {
-    id: '1',
-    timestamp: new Date(Date.now() - 1000 * 60 * 5),
-    user: 'Super Admin',
-    userEmail: 'admin@padelhub.com',
-    action: 'Login',
-    details: 'Login berhasil dari IP 192.168.1.1',
-    target: 'System',
-  },
-  {
-    id: '2',
-    timestamp: new Date(Date.now() - 1000 * 60 * 30),
-    user: 'Budi Santoso',
-    userEmail: 'budi@padelhub.com',
-    action: 'Create',
-    details: 'Membuat venue baru "PadelHub Central Jakarta"',
-    target: 'Venue',
-  },
-  {
-    id: '3',
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2),
-    user: 'Siti Rahayu',
-    userEmail: 'siti@padelhub.com',
-    action: 'Update',
-    details: 'Memperbarui harga lapangan Court 1 menjadi Rp 150.000/jam',
-    target: 'Pricing',
-  },
-  {
-    id: '4',
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 5),
-    user: 'Super Admin',
-    userEmail: 'admin@padelhub.com',
-    action: 'Delete',
-    details: 'Menghapus admin "Ahmad Fauzi" dari sistem',
-    target: 'Admin',
-  },
-  {
-    id: '5',
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 8),
-    user: 'Budi Santoso',
-    userEmail: 'budi@padelhub.com',
-    action: 'Update',
-    details: 'Menonaktifkan venue "PadelHub Barat"',
-    target: 'Venue',
-  },
-  {
-    id: '6',
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 12),
-    user: 'Ahmad Fauzi',
-    userEmail: 'ahmad@padelhub.com',
-    action: 'Login',
-    details: 'Login berhasil dari IP 10.0.0.55',
-    target: 'System',
-  },
-  {
-    id: '7',
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24),
-    user: 'Super Admin',
-    userEmail: 'admin@padelhub.com',
-    action: 'Create',
-    details: 'Membuat admin baru "Siti Rahayu" untuk venue PadelHub Selatan',
-    target: 'Admin',
-  },
-  {
-    id: '8',
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 36),
-    user: 'Siti Rahayu',
-    userEmail: 'siti@padelhub.com',
-    action: 'Update',
-    details: 'Memperbarui konfigurasi notifikasi email',
-    target: 'Config',
-  },
-  {
-    id: '9',
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 48),
-    user: 'Budi Santoso',
-    userEmail: 'budi@padelhub.com',
-    action: 'Create',
-    details: 'Menambahkan 2 lapangan baru di PadelHub Central',
-    target: 'Court',
-  },
-  {
-    id: '10',
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 72),
-    user: 'Super Admin',
-    userEmail: 'admin@padelhub.com',
-    action: 'Update',
-    details: 'Memperbarui durasi booking minimum menjadi 60 menit',
-    target: 'Config',
-  },
-  {
-    id: '11',
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 96),
-    user: 'Ahmad Fauzi',
-    userEmail: 'ahmad@padelhub.com',
-    action: 'Delete',
-    details: 'Menghapus laporan bulanan lama',
-    target: 'Report',
-  },
-  {
-    id: '12',
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 120),
-    user: 'Super Admin',
-    userEmail: 'admin@padelhub.com',
-    action: 'Login',
-    details: 'Login berhasil dari IP 192.168.1.100',
-    target: 'System',
-  },
-];
 
 const ACTION_TYPES: ActionType[] = ['Login', 'Create', 'Update', 'Delete'];
 
@@ -217,8 +110,26 @@ export default function SuperAdminAuditLogPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedAction, setSelectedAction] = useState<ActionType | null>(null);
 
+  const { data: response } = useQuery({
+    queryKey: ['audit-logs'],
+    queryFn: async () => {
+      const { data } = await apiClient.get<{ data: Array<{ id: string; createdAt: string; action: string; entity: string; entityId: string; actor?: { name?: string | null; email?: string | null } | null; metadata?: unknown }> }>('/audit-logs');
+      return data.data;
+    },
+  });
+
+  const logs: AuditLogEntry[] = (response ?? []).map((log) => ({
+    id: log.id,
+    timestamp: new Date(log.createdAt),
+    user: log.actor?.name || 'System',
+    userEmail: log.actor?.email || '-',
+    action: log.action.toLowerCase().includes('delete') ? 'Delete' : log.action.toLowerCase().includes('create') ? 'Create' : log.action.toLowerCase().includes('login') ? 'Login' : 'Update',
+    details: `${log.action} ${log.entity}`,
+    target: `${log.entity} ${log.entityId}`,
+  }));
+
   /* ---- Filter logs ---- */
-  const filteredLogs = MOCK_AUDIT_LOGS.filter((log) => {
+  const filteredLogs = logs.filter((log) => {
     const matchesSearch =
       searchQuery === '' ||
       log.user.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -287,7 +198,7 @@ export default function SuperAdminAuditLogPage() {
             </div>
             <div>
               <p className="text-xs text-muted-foreground">Total Log</p>
-              <p className="text-xl font-bold">{MOCK_AUDIT_LOGS.length}</p>
+              <p className="text-xl font-bold">{logs.length}</p>
             </div>
           </div>
           <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 ring-1 ring-foreground/5 shadow-sm">
@@ -297,7 +208,7 @@ export default function SuperAdminAuditLogPage() {
             <div>
               <p className="text-xs text-muted-foreground">Login</p>
               <p className="text-xl font-bold">
-                {MOCK_AUDIT_LOGS.filter((l) => l.action === 'Login').length}
+                {logs.filter((l) => l.action === 'Login').length}
               </p>
             </div>
           </div>
@@ -308,7 +219,7 @@ export default function SuperAdminAuditLogPage() {
             <div>
               <p className="text-xs text-muted-foreground">Update</p>
               <p className="text-xl font-bold">
-                {MOCK_AUDIT_LOGS.filter((l) => l.action === 'Update').length}
+                {logs.filter((l) => l.action === 'Update').length}
               </p>
             </div>
           </div>
@@ -319,7 +230,7 @@ export default function SuperAdminAuditLogPage() {
             <div>
               <p className="text-xs text-muted-foreground">Delete</p>
               <p className="text-xl font-bold">
-                {MOCK_AUDIT_LOGS.filter((l) => l.action === 'Delete').length}
+                {logs.filter((l) => l.action === 'Delete').length}
               </p>
             </div>
           </div>
